@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EHSAN_FlipCards – SAT Vocab Memory</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal-box">
+    <div class="modal-title">🔒 Teacher Access</div>
+    <div class="modal-sub">Enter the teacher password to edit the word list</div>
+    <input class="modal-input" id="pw-input" type="password" placeholder="Password" maxlength="32"/>
+    <div class="modal-err" id="pw-err">Incorrect password. Try again.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closePwModal()">Cancel</button>
+      <button class="modal-ok" onclick="submitPw()">Enter</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cpw-modal">
+  <div class="modal-box">
+    <div class="modal-title">🔑 Change Password</div>
+    <div class="modal-sub">Enter a new teacher password</div>
+    <input class="modal-input" id="cpw-old" type="password" placeholder="Current password" maxlength="32"/>
+    <input class="modal-input" id="cpw-new" type="password" placeholder="New password" maxlength="32"/>
+    <input class="modal-input" id="cpw-new2" type="password" placeholder="Confirm new password" maxlength="32"/>
+    <div class="modal-err" id="cpw-err"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeCpwModal()">Cancel</button>
+      <button class="modal-ok" onclick="submitCpw()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="welcome-modal">
+  <div class="modal-box">
+    <div class="welcome-emoji">👋</div>
+    <div class="welcome-title">Welcome!</div>
+    <div class="welcome-sub">Enter your name to personalise your experience,<br>or continue as a guest.</div>
+    <input class="welcome-name-input" id="welcome-input" type="text" placeholder="Enter your name…" maxlength="30" autocomplete="off"/>
+    <button class="welcome-ok" onclick="submitName()">Let's Go →</button>
+    <button class="deck-cancel" onclick="continueAsGuest()" style="margin-top:-4px">Continue as Guest</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deck-modal">
+  <div class="modal-box">
+    <div class="modal-title">📖 Choose Session Size</div>
+    <div class="modal-sub">How many cards do you want to study?</div>
+    <div class="deck-opts">
+      <button class="deck-opt quick" onclick="launchStudy(10)">
+        <span>⚡ Quick Review<br><small style="font-weight:400;opacity:.7">~5 minutes</small></span>
+        <span class="deck-tag">10 cards</span>
+      </button>
+      <button class="deck-opt standard" onclick="launchStudy(25)">
+        <span>📘 Standard Session<br><small style="font-weight:400;opacity:.7">~15 minutes</small></span>
+        <span class="deck-tag">25 cards</span>
+      </button>
+      <button class="deck-opt full" onclick="launchStudy(0)">
+        <span>🏆 Full Deck<br><small style="font-weight:400;opacity:.7">Full prep session</small></span>
+        <span class="deck-tag" id="deck-all-label">All cards</span>
+      </button>
+    </div>
+    <div class="timed-toggle-row">
+      <span class="timed-label">⏱️ Timed Mode <small style="font-weight:400;opacity:.7">(10s per card)</small></span>
+      <div class="sound-toggle" id="timed-toggle" onclick="toggleTimedMode()"></div>
+    </div>
+    <button class="deck-cancel" onclick="closeDeckModal()">Cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="help-modal">
+  <div class="modal-box">
+    <div class="modal-title">❓ How to Play</div>
+    <div class="help-list">
+      <div class="help-item"><span class="hi">🃏</span><div><strong>Flip the card</strong> — tap it (or press Space) to reveal the definition, synonym, and antonym on the back.</div></div>
+      <div class="help-item"><span class="hi">✅</span><div><strong>Judge yourself honestly</strong> — after flipping, pick <em>Again</em>, <em>Hard</em>, or <em>Easy</em> based on how well you recalled the word.</div></div>
+      <div class="help-item"><span class="hi">🎯</span><div><strong>Focus Mode</strong> — only shows cards you marked <em>Again</em> or <em>Hard</em>. Use it to drill your weak spots.</div></div>
+      <div class="help-item"><span class="hi">📈</span><div><strong>Mastery bar</strong> — fills up as you mark cards <em>Easy</em>. Try to get it to 100%!</div></div>
+      <div class="help-item"><span class="hi">🔊</span><div><strong>Pronunciation</strong> — tap the 🔊 button on any card to hear the word spoken aloud.</div></div>
+    </div>
+    <div class="help-divider"></div>
+    <div class="help-shortcuts">
+      <b>Space / Enter</b> — flip &nbsp;·&nbsp; <b>← →</b> — navigate<br>
+      <b>1</b> Again &nbsp;·&nbsp; <b>2</b> Hard &nbsp;·&nbsp; <b>3</b> Easy (after flipping)
+    </div>
+    <button class="help-close" onclick="closeHelpModal()">Got it!</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal-box">
+    <div class="modal-title">📱 Scan to Open</div>
+    <div class="modal-sub">Point your phone's camera at this code to open EHSAN_FlipCards instantly.</div>
+    <div class="qr-box" id="qr-box"></div>
+    <div class="qr-url">ehsan-flipcards.netlify.app</div>
+    <button class="deck-cancel" onclick="closeQrModal()">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirm-delete-modal">
+  <div class="modal-box">
+    <div class="confirm-icon">⚠️</div>
+    <div class="modal-title">Delete All Words?</div>
+    <div class="modal-sub">This will permanently remove <strong id="delete-count-label">0</strong> words from the list. This cannot be undone.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeDeleteAllModal()">Cancel</button>
+      <button class="modal-danger-btn" onclick="confirmDeleteAll()">Delete All</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirm-upload-modal">
+  <div class="modal-box">
+    <div class="modal-title">⬆️ Upload Word List</div>
+    <div class="modal-sub">Upload a .txt file to replace the current word list.</div>
+    <div class="upload-format-hint">Format (one word per line):<br>word;&nbsp;&nbsp;&nbsp;&nbsp;syn;&nbsp;&nbsp;&nbsp;&nbsp;ant;&nbsp;&nbsp;&nbsp;&nbsp;def;<br><span style="opacity:.65">(fields separated by a TAB, semicolon after each)</span></div>
+    <label class="upload-file-label" for="upload-file-input">📄 <span id="upload-file-name">Choose .txt file…</span></label>
+    <input type="file" id="upload-file-input" accept=".txt" style="display:none" onchange="handleUploadFile(this)"/>
+    <div class="confirm-detail" id="upload-preview" style="display:none"></div>
+    <div class="modal-err" id="upload-err"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeUploadModal()">Cancel</button>
+      <button class="modal-ok" id="upload-confirm-btn" onclick="confirmUpload()" style="opacity:.4;pointer-events:none">Replace List</button>
+    </div>
+  </div>
+</div>
+
+<div id="home" class="screen active">
+  <div class="lang-selector no-i18n" aria-label="Language">
+    <button class="lang-btn" type="button" data-lang="en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" type="button" data-lang="es" onclick="setLang('es')">Español</button>
+    <button class="lang-btn" type="button" data-lang="ru" onclick="setLang('ru')">Русский</button>
+    <button class="lang-btn" type="button" data-lang="fa" onclick="setLang('fa')">فارسی</button>
+    <button class="lang-btn" type="button" data-lang="tr" onclick="setLang('tr')">Türkçe</button>
+  </div>
+  <button class="help-btn" onclick="openHelpModal()" title="How to play">?</button>
+
+  <div class="logo-mark">🃏</div>
+  <div class="logo-title">EHSAN_FlipCards</div>
+  <div class="logo-sub">SAT Vocab · Memory Cards</div>
+  <div class="home-greeting" id="home-greeting" style="display:none">Welcome back, <span id="greeting-name"></span> 👋</div>
+
+  <div class="home-stats">
+    <div class="hstat"><div class="hstat-val" id="hs-total">0</div><div class="hstat-lbl">Cards</div></div>
+    <div class="hstat"><div class="hstat-val green" id="hs-easy" style="color:var(--green)">0</div><div class="hstat-lbl">Mastered</div></div>
+    <div class="hstat"><div class="hstat-val amber" id="hs-due" style="color:var(--amber)">0</div><div class="hstat-lbl">Due</div></div>
+  </div>
+
+  <div class="home-modes">
+    <button class="mode-btn btn-study" onclick="openDeckModal()">
+      <span class="icon">📖</span>
+      <span class="label"><span>Study Cards</span><span>Choose 10, 25, or the full deck</span></span>
+    </button>
+    <button class="mode-btn btn-focus" onclick="startFocus()">
+      <span class="icon">🎯</span>
+      <span class="label"><span>Focus Mode</span><span>Review only Hard &amp; Again cards</span></span>
+    </button>
+  </div>
+
+  <div class="home-bottom">
+    <div class="sound-row">
+      <div class="sound-toggle" id="sound-toggle" onclick="toggleSound()"></div>
+      <span id="sound-label">Background music: Off</span>
+    </div>
+    <button class="qr-trigger" onclick="openQrModal()">📱 Open on Phone (QR)</button>
+    <button class="teacher-btn" onclick="requirePw()">✏️ Edit Word List</button>
+    <button class="teacher-btn" id="switch-user-btn" onclick="switchUser()" style="display:none">🔄 Switch User</button>
+  </div>
+
+  <div class="footer-label">Designed and developed for educational purposes by Ehsan A.</div>
+</div>
+
+<div id="study" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="exitStudy()">←</button>
+    <span class="topbar-title" id="study-title">Study All</span>
+    <div style="width:40px"></div>
+  </div>
+
+  <div class="timer-wrap" id="timer-wrap">
+    <div class="timer-ring-box">
+      <svg width="46" height="46" viewBox="0 0 46 46">
+        <circle class="timer-ring-bg" cx="23" cy="23" r="19"/>
+        <circle class="timer-ring-fg" id="timer-ring-fg" cx="23" cy="23" r="19" stroke-dasharray="119.4" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-num" id="timer-num">10</div>
+    </div>
+    <span class="timer-caption">Timed Mode — flip before time runs out</span>
+  </div>
+
+  <div class="mastery-wrap">
+    <div class="mastery-labels">
+      <span>Mastery</span>
+      <span class="mastery-count" id="mastery-count">0 mastered</span>
+    </div>
+    <div class="mastery-track"><div class="mastery-fill" id="mastery-fill"></div></div>
+  </div>
+
+  <div class="scene" id="scene" onclick="flipCard()">
+    <div class="flip-card" id="flip-card">
+      <div class="card-face front">
+        <div class="card-status-dot" id="status-dot"></div>
+        <div class="card-num" id="card-num">1 / 30</div>
+        <div class="card-word" id="card-word">—</div>
+        <button class="card-tts" id="card-tts" onclick="event.stopPropagation();ttsSpeak(document.getElementById('card-word').textContent,this)">🔊</button>
+        <div class="tap-hint">↕ Tap to flip</div>
+      </div>
+      <div class="card-face back">
+        <div class="back-word" id="back-word"></div>
+        <div class="back-def" id="back-def"></div>
+        <div class="back-chips" id="back-chips"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="judge-row" id="judge-row">
+    <button class="jbtn jbtn-again" onclick="judge('again')">↩ Again<small>Don't know it</small></button>
+    <button class="jbtn jbtn-hard"  onclick="judge('hard')">😓 Hard<small>Struggled a bit</small></button>
+    <button class="jbtn jbtn-easy"  onclick="judge('easy')">✓ Easy<small>Got it!</small></button>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" disabled>‹</button>
+    <span class="nav-idx" id="nav-idx">1 / 30</span>
+    <button class="nav-btn" id="next-btn" onclick="navigate(1)">›</button>
+  </div>
+  <div class="tool-row">
+    <button class="tool-btn" onclick="shuffleDeck()">⇄ Shuffle</button>
+    <button class="tool-btn" onclick="resetProgress()">↺ Reset</button>
+  </div>
+</div>
+
+<div id="focus" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="topbar-title">Focus Mode</span>
+    <div class="score-pill">🎯 <span class="score-val" id="focus-remaining">0</span> left</div>
+  </div>
+
+  <div class="mastery-wrap">
+    <div class="mastery-labels">
+      <span>Progress</span>
+      <span class="mastery-count" id="focus-count">0 cleared</span>
+    </div>
+    <div class="mastery-track"><div class="mastery-fill" id="focus-fill"></div></div>
+  </div>
+
+  <div id="focus-empty-notready" class="focus-empty" style="display:none">
+    <strong>🎯 Nothing to Focus On Yet</strong>
+    Study some cards first and mark any you find<br>
+    <em>Hard</em> or <em>Again</em> — they'll queue up here for drilling.
+    <br><br>
+    <button class="mode-btn btn-study" style="max-width:260px;justify-content:center" onclick="goHome();setTimeout(openDeckModal,200)">📖 Start Studying</button>
+  </div>
+
+  <div id="focus-empty-cleared" class="focus-empty" style="display:none">
+    <strong>🎉 All Clear!</strong>
+    You've cleared every Hard &amp; Again card.<br>Keep studying to find your next challenge.
+    <br><br>
+    <button class="mode-btn btn-study" style="max-width:260px;justify-content:center" onclick="goHome();setTimeout(openDeckModal,200)">📖 Study More Cards</button>
+  </div>
+
+  <div class="scene" id="focus-scene" onclick="focusFlip()" style="display:none">
+    <div class="flip-card" id="focus-card">
+      <div class="card-face front">
+        <div class="card-status-dot" id="focus-dot"></div>
+        <div class="card-num" id="focus-num">1 / ?</div>
+        <div class="card-word" id="focus-word">—</div>
+        <button class="card-tts" id="focus-tts" onclick="event.stopPropagation();ttsSpeak(document.getElementById('focus-word').textContent,this)">🔊</button>
+        <div class="tap-hint">↕ Tap to flip</div>
+      </div>
+      <div class="card-face back">
+        <div class="back-word" id="focus-back-word"></div>
+        <div class="back-def"  id="focus-back-def"></div>
+        <div class="back-chips" id="focus-back-chips"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="judge-row" id="focus-judge">
+    <button class="jbtn jbtn-again" onclick="focusJudge('again')">↩ Again<small>Retry this card</small></button>
+    <button class="jbtn jbtn-hard"  onclick="focusJudge('hard')">😓 Hard<small>Keep in queue</small></button>
+    <button class="jbtn jbtn-easy"  onclick="focusJudge('easy')">✓ Easy<small>Remove it!</small></button>
+  </div>
+
+  <div class="tool-row" id="focus-tools">
+    <button class="tool-btn" onclick="goHome()">← Home</button>
+  </div>
+</div>
+
+<div id="complete" class="screen">
+  <div class="result-icon">🎓</div>
+  <div class="result-title">Deck Complete!</div>
+  <div class="result-sub">Here's how you did this round</div>
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-val green" id="res-easy">0</div><div class="stat-lbl">Easy</div></div>
+    <div class="stat-box"><div class="stat-val amber" id="res-hard">0</div><div class="stat-lbl">Hard</div></div>
+    <div class="stat-box"><div class="stat-val red"   id="res-again">0</div><div class="stat-lbl">Again</div></div>
+    <div class="stat-box"><div class="stat-val"       id="res-pct">0%</div><div class="stat-lbl">Mastery</div></div>
+  </div>
+  <div class="result-actions">
+    <button class="play-again-btn" onclick="goHome();setTimeout(openDeckModal,200)">Study Again</button>
+    <button class="mode-btn btn-focus" style="justify-content:center" onclick="startFocus()">
+      🎯 Focus on Hard Cards
+    </button>
+    <button class="home-btn-res" onclick="goHome()">← Back to Home</button>
+  </div>
+</div>
+
+<div id="editor" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="topbar-title">✏️ Edit Word List</span>
+    <div></div>
+  </div>
+  <p class="editor-note">Add, edit, or remove words. Changes are shared with EHSAN_WordDuel.<br>Leave Definition blank and it will show "—" on the card back.</p>
+  <div class="editor-table-wrap">
+    <table class="word-table">
+      <thead><tr><th>Word</th><th>Synonym</th><th>Antonym</th><th style="min-width:180px">Definition (optional)</th><th></th></tr></thead>
+      <tbody id="editor-body"></tbody>
+    </table>
+  </div>
+  <div class="editor-actions">
+    <button class="add-row-btn" onclick="editorAddRow()">+ Add Word</button>
+    <button class="save-words-btn" onclick="editorSave()">Save Changes</button>
+  </div>
+  <div class="editor-secondary-actions">
+    <button class="upload-btn" onclick="openUploadModal()">⬆️ Upload Word List (.txt)</button>
+    <button class="delete-all-btn" onclick="openDeleteAllModal()">🗑️ Delete All Words</button>
+  </div>
+  <div class="save-toast" id="editor-toast">✅ Word list saved!</div>
+  <button class="change-pw-btn" style="margin-top:8px" onclick="openCpwModal()">🔑 Change Password</button>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
