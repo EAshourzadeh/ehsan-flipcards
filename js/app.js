@@ -1144,7 +1144,7 @@ function closeHelpModal(){ document.getElementById('help-modal').className = 'mo
 /* ══════════════════════════════════════════════
    QR CODE MODAL
 ══════════════════════════════════════════════ */
-const APP_URL = 'https://ehsan-flipcards.netlify.app/';
+const APP_URL = 'https://ehsan-flipcards.learninglabs.workers.dev/';
 let qrRendered = false;
 function openQrModal(){
   document.getElementById('qr-modal').className = 'modal-overlay show';
