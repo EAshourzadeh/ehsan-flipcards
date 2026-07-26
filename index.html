@@ -10,34 +10,6 @@
 </head>
 <body>
 
-<div class="modal-overlay" id="pw-modal">
-  <div class="modal-box">
-    <div class="modal-title">🔒 Teacher Access</div>
-    <div class="modal-sub">Enter the teacher password to edit the word list</div>
-    <input class="modal-input" id="pw-input" type="password" placeholder="Password" maxlength="32"/>
-    <div class="modal-err" id="pw-err">Incorrect password. Try again.</div>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="closePwModal()">Cancel</button>
-      <button class="modal-ok" onclick="submitPw()">Enter</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="cpw-modal">
-  <div class="modal-box">
-    <div class="modal-title">🔑 Change Password</div>
-    <div class="modal-sub">Enter a new teacher password</div>
-    <input class="modal-input" id="cpw-old" type="password" placeholder="Current password" maxlength="32"/>
-    <input class="modal-input" id="cpw-new" type="password" placeholder="New password" maxlength="32"/>
-    <input class="modal-input" id="cpw-new2" type="password" placeholder="Confirm new password" maxlength="32"/>
-    <div class="modal-err" id="cpw-err"></div>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeCpwModal()">Cancel</button>
-      <button class="modal-ok" onclick="submitCpw()">Save</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="welcome-modal">
   <div class="modal-box">
     <div class="welcome-emoji">👋</div>
@@ -94,16 +66,6 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="qr-modal">
-  <div class="modal-box">
-    <div class="modal-title">📱 Scan to Open</div>
-    <div class="modal-sub">Point your phone's camera at this code to open EHSAN_FlipCards instantly.</div>
-    <div class="qr-box" id="qr-box"></div>
-    <div class="qr-url">ehsan-flipcards.learninglabs.workers.dev/</div>
-    <button class="deck-cancel" onclick="closeQrModal()">Close</button>
-  </div>
-</div>
-
 <div class="modal-overlay" id="confirm-delete-modal">
   <div class="modal-box">
     <div class="confirm-icon">⚠️</div>
@@ -140,8 +102,6 @@
     <button class="lang-btn" type="button" data-lang="fa" onclick="setLang('fa')">فارسی</button>
     <button class="lang-btn" type="button" data-lang="tr" onclick="setLang('tr')">Türkçe</button>
   </div>
-  <button class="help-btn" onclick="openHelpModal()" title="How to play">?</button>
-
   <div class="logo-mark">🃏</div>
   <div class="logo-title">EHSAN_FlipCards</div>
   <div class="logo-sub">SAT Vocab · Memory Cards</div>
@@ -169,9 +129,15 @@
       <div class="sound-toggle" id="sound-toggle" onclick="toggleSound()"></div>
       <span id="sound-label">Background music: Off</span>
     </div>
-    <button class="qr-trigger" onclick="openQrModal()">📱 Open on Phone (QR)</button>
+    <button class="qr-trigger" onclick="openHelpModal()">❓ How to Play</button>
     <button class="teacher-btn" onclick="requirePw()">✏️ Edit Word List</button>
     <button class="teacher-btn" id="switch-user-btn" onclick="switchUser()" style="display:none">🔄 Switch User</button>
+  </div>
+
+  <div class="qr-widget">
+    <div class="qr-label">📱 Scan to open on your phone</div>
+    <div class="qr-box" id="qr-canvas"></div>
+    <div class="qr-url">ehsan-flipcards.learninglabs.workers.dev/</div>
   </div>
 
   <div class="footer-label">Designed and developed for educational purposes by Ehsan A.</div>
@@ -333,10 +299,10 @@
   </div>
   <div class="editor-secondary-actions">
     <button class="upload-btn" onclick="openUploadModal()">⬆️ Upload Word List (.txt)</button>
+    <button class="upload-btn" onclick="exportWordList()">⬇️ Export Word List (.txt)</button>
     <button class="delete-all-btn" onclick="openDeleteAllModal()">🗑️ Delete All Words</button>
   </div>
   <div class="save-toast" id="editor-toast">✅ Word list saved!</div>
-  <button class="change-pw-btn" style="margin-top:8px" onclick="openCpwModal()">🔑 Change Password</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -345,5 +311,6 @@
 <script src="js/firebase-init.js"></script>
 <script src="js/app.js"></script>
 <script src="js/cloud-sync.js"></script>
+<script src="js/access-portal.js"></script>
 </body>
 </html>
