@@ -75,8 +75,9 @@
       showPortal();
     }, true);
     document.getElementById("cloud-signout").addEventListener("click", () => {
-      intendedPath = "";
-      sessionStorage.removeItem(ACCESS_KEY);
+      intendedPath = "guest";
+      sessionStorage.setItem(ACCESS_KEY, intendedPath);
+      hidePortal();
     });
     document.getElementById("cloud-auth-cancel").textContent = "Back to choices";
     document.getElementById("cloud-auth-cancel").addEventListener("click", showPortal);
@@ -100,6 +101,10 @@
     document.getElementById("access-error").textContent = "";
     hidePortal();
     forceSignInMode();
+    document.getElementById("cloud-auth-form").reset();
+    document.getElementById("cloud-email").value = "";
+    document.getElementById("cloud-password").value = "";
+    document.getElementById("cloud-name").value = "";
     document.getElementById("cloud-auth-title").textContent = path === "teacher" ? "Teacher sign in" : "Student sign in";
     document.querySelector("#cloud-auth-form p").textContent = path === "teacher"
       ? "Use the Firebase account that has the teacher role."

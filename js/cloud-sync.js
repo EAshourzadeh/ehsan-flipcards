@@ -102,9 +102,17 @@
   }
 
   function openAuth() {
+    clearAuthFields();
     document.getElementById("cloud-auth-error").textContent = "";
     document.getElementById("cloud-auth").classList.add("show");
     setTimeout(() => document.getElementById("cloud-email").focus(), 50);
+  }
+
+  function clearAuthFields() {
+    document.getElementById("cloud-auth-form").reset();
+    document.getElementById("cloud-email").value = "";
+    document.getElementById("cloud-password").value = "";
+    document.getElementById("cloud-name").value = "";
   }
 
   function closeAuth() {
@@ -206,6 +214,8 @@
       document.getElementById("cloud-signin").hidden = true;
       document.getElementById("cloud-signout").hidden = false;
     }
+    const teacherEditor = document.getElementById("teacher-editor-btn");
+    if (teacherEditor) teacherEditor.hidden = !isTeacher();
   }
 
   async function loadCloudVocabulary() {
@@ -296,9 +306,7 @@
   const originalSwitchUser = window.switchUser;
   window.switchUser = function () {
     if (state.user) {
-      if (confirm("Sign out and clear this device's current study session?")) {
-        firebaseAuth.signOut().then(() => originalSwitchUser());
-      }
+      firebaseAuth.signOut();
       return;
     }
     originalSwitchUser();
