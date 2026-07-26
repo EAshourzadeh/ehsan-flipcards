@@ -10,17 +10,6 @@
 </head>
 <body>
 
-<div class="modal-overlay" id="welcome-modal">
-  <div class="modal-box">
-    <div class="welcome-emoji">👋</div>
-    <div class="welcome-title">Welcome!</div>
-    <div class="welcome-sub">Enter your name to personalise your experience,<br>or continue as a guest.</div>
-    <input class="welcome-name-input" id="welcome-input" type="text" placeholder="Enter your name…" maxlength="30" autocomplete="off"/>
-    <button class="welcome-ok" onclick="submitName()">Let's Go →</button>
-    <button class="deck-cancel" onclick="continueAsGuest()" style="margin-top:-4px">Continue as Guest</button>
-  </div>
-</div>
-
 <div class="modal-overlay" id="deck-modal">
   <div class="modal-box">
     <div class="modal-title">📖 Choose Session Size</div>
@@ -105,8 +94,6 @@
   <div class="logo-mark">🃏</div>
   <div class="logo-title">EHSAN_FlipCards</div>
   <div class="logo-sub">SAT Vocab · Memory Cards</div>
-  <div class="home-greeting" id="home-greeting" style="display:none">Welcome back, <span id="greeting-name"></span> 👋</div>
-
   <div class="home-stats">
     <div class="hstat"><div class="hstat-val" id="hs-total">0</div><div class="hstat-lbl">Cards</div></div>
     <div class="hstat"><div class="hstat-val green" id="hs-easy" style="color:var(--green)">0</div><div class="hstat-lbl">Mastered</div></div>
@@ -131,7 +118,6 @@
     </div>
     <button class="qr-trigger" onclick="openHelpModal()">❓ How to Play</button>
     <button class="teacher-btn" id="teacher-editor-btn" onclick="requirePw()" hidden>✏️ Edit Word List</button>
-    <button class="teacher-btn" id="switch-user-btn" onclick="switchUser()" style="display:none">🔄 Switch User</button>
   </div>
 
   <div class="qr-widget">
