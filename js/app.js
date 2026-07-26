@@ -940,9 +940,6 @@ const DEFAULT_WORDS = [
 /* ══════════════════════════════════════════════
    STORAGE
 ══════════════════════════════════════════════ */
-const DEFAULT_PW = 'Ehsan2026';
-function getPw(){ return localStorage.getItem('teacherPw')||DEFAULT_PW; }
-function setPw(p){ localStorage.setItem('teacherPw',p); }
 function loadWords(){
   try{
     const s = localStorage.getItem('wordlist');
@@ -1142,30 +1139,22 @@ function openHelpModal(){ document.getElementById('help-modal').className = 'mod
 function closeHelpModal(){ document.getElementById('help-modal').className = 'modal-overlay'; }
 
 /* ══════════════════════════════════════════════
-   QR CODE MODAL
+   QR CODE
 ══════════════════════════════════════════════ */
 const APP_URL = 'https://ehsan-flipcards.learninglabs.workers.dev/';
-let qrRendered = false;
-function openQrModal(){
-  document.getElementById('qr-modal').className = 'modal-overlay show';
-  if(!qrRendered) renderQr();
-}
-function closeQrModal(){ document.getElementById('qr-modal').className = 'modal-overlay'; }
-function renderQr(){
-  const box = document.getElementById('qr-box');
-  box.innerHTML = '';
-  try{
-    if(typeof QRCode !== 'undefined'){
-      new QRCode(box, { text: APP_URL, width: 220, height: 220, colorDark:'#0D1B2A', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
-      qrRendered = true;
-      return;
-    }
-  }catch(e){}
-  box.innerHTML = `<div style="width:220px;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#0D1B2A;text-align:center;padding:16px">
-    <div style="font-size:34px">📵</div>
-    <div style="font-size:12px;font-weight:700;line-height:1.5">QR code unavailable offline.</div>
-  </div>`;
-}
+(function(){
+  function tryQR(){
+    const box = document.getElementById('qr-canvas');
+    if(!box || typeof QRCode === 'undefined'){ setTimeout(tryQR, 100); return; }
+    new QRCode(box, {
+      text: APP_URL,
+      width: 128, height: 128,
+      colorDark:'#1a1a2e', colorLight:'#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+  tryQR();
+})();
 
 /* ══════════════════════════════════════════════
    SCREEN MANAGEMENT
@@ -1407,55 +1396,6 @@ function focusJudge(rating){
 }
 
 /* ══════════════════════════════════════════════
-   PASSWORD SYSTEM
-══════════════════════════════════════════════ */
-function requirePw(){
-  document.getElementById('pw-input').value = '';
-  document.getElementById('pw-input').className = 'modal-input';
-  document.getElementById('pw-err').className = 'modal-err';
-  document.getElementById('pw-modal').className = 'modal-overlay show';
-  setTimeout(()=>document.getElementById('pw-input').focus(), 100);
-}
-function closePwModal(){ document.getElementById('pw-modal').className = 'modal-overlay'; }
-function submitPw(){
-  const val = document.getElementById('pw-input').value;
-  if(val === getPw()){
-    closePwModal();
-    words = loadWords();
-    renderEditor();
-    showScreen('editor');
-  } else {
-    document.getElementById('pw-input').className = 'modal-input err';
-    document.getElementById('pw-err').className = 'modal-err show';
-    playSfx('wrong');
-  }
-}
-document.getElementById('pw-input').addEventListener('keydown', e=>{ if(e.key==='Enter') submitPw(); });
-
-function openCpwModal(){
-  ['cpw-old','cpw-new','cpw-new2'].forEach(id=>{
-    document.getElementById(id).value = '';
-    document.getElementById(id).className = 'modal-input';
-  });
-  document.getElementById('cpw-err').className = 'modal-err';
-  document.getElementById('cpw-modal').className = 'modal-overlay show';
-  setTimeout(()=>document.getElementById('cpw-old').focus(), 100);
-}
-function closeCpwModal(){ document.getElementById('cpw-modal').className = 'modal-overlay'; }
-function submitCpw(){
-  const old = document.getElementById('cpw-old').value;
-  const n1  = document.getElementById('cpw-new').value;
-  const n2  = document.getElementById('cpw-new2').value;
-  const err = document.getElementById('cpw-err');
-  if(old !== getPw()){ err.textContent='Current password is incorrect.'; err.className='modal-err show'; return; }
-  if(n1.length < 4){ err.textContent='New password must be at least 4 characters.'; err.className='modal-err show'; return; }
-  if(n1 !== n2){ err.textContent='New passwords do not match.'; err.className='modal-err show'; return; }
-  setPw(n1);
-  closeCpwModal();
-  alert('✅ Password changed successfully!');
-}
-
-/* ══════════════════════════════════════════════
    EDITOR
 ══════════════════════════════════════════════ */
 function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -1622,6 +1562,26 @@ function confirmUpload(){
   closeUploadModal();
   renderEditor();
   updateHomeStats();
+  playSfx('correct');
+}
+
+function exportWordList(){
+  const clean = value => String(value || '')
+    .replace(/[\t\r\n]+/g, ' ')
+    .replace(/;/g, ',')
+    .trim();
+  const lines = loadWords().map(item =>
+    `${clean(item.word)};\t${clean(item.syn)};\t${clean(item.ant)};\t${clean(item.def)};`
+  );
+  const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type:'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'EHSAN_FlipCards_WordList.txt';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
   playSfx('correct');
 }
 
