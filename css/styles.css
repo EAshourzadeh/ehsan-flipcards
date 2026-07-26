@@ -232,15 +232,6 @@ table.word-table tr:hover td{background:#1e2f46}
 .modal-ok{flex:1;padding:14px;border-radius:var(--radius);background:linear-gradient(135deg,var(--violet),var(--violet2));font-size:15px;font-weight:800;color:#fff}
 .modal-cancel{flex:1;padding:14px;border-radius:var(--radius);background:var(--navy);border:1.5px solid var(--border);font-size:15px;font-weight:700;color:var(--text)}
 
-#welcome-modal .modal-box{max-width:380px}
-.welcome-emoji{font-size:48px;line-height:1;margin-bottom:4px}
-.welcome-title{font-size:22px;font-weight:900;letter-spacing:-.5px}
-.welcome-sub{font-size:13px;color:var(--muted);line-height:1.6}
-.welcome-name-input{background:var(--navy);border:2px solid var(--border);border-radius:var(--radius);padding:14px 18px;font-size:17px;font-weight:700;color:var(--text);font-family:inherit;width:100%;text-align:center;transition:border-color .2s}
-.welcome-name-input:focus{border-color:var(--violet2);outline:none}
-.welcome-ok{width:100%;padding:15px;border-radius:var(--radius);background:linear-gradient(135deg,var(--violet),var(--violet2));font-size:15px;font-weight:800;color:#fff;transition:transform .15s}
-.welcome-ok:hover{transform:translateY(-1px)}
-
 #deck-modal .modal-box{max-width:360px;gap:12px}
 .deck-opts{display:flex;flex-direction:column;gap:8px;width:100%}
 .deck-opt{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:var(--radius);border:2px solid var(--border);background:none;color:var(--text);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:border-color .2s,background .2s}
@@ -267,8 +258,6 @@ table.word-table tr:hover td{background:#1e2f46}
 .help-btn:hover{border-color:var(--violet2);color:var(--violet2)}
 #home{position:relative}
 
-.home-greeting{font-size:15px;font-weight:600;color:var(--muted)}
-.home-greeting span{color:var(--text)}
 
 .timed-toggle-row{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 4px 2px;font-size:13px;color:var(--muted);font-weight:600}
 .timed-toggle-row .timed-label{display:flex;align-items:center;gap:8px;color:var(--text)}
@@ -315,6 +304,6 @@ html[dir="rtl"] .lang-selector{direction:ltr}
 html[dir="rtl"] .mode-btn .label{text-align:right}
 html[dir="rtl"] .topbar-title,html[dir="rtl"] .editor-note,html[dir="rtl"] .modal-sub,html[dir="rtl"] .result-sub,html[dir="rtl"] .q-instruction,html[dir="rtl"] .match-instructions{text-align:center}
 html[dir="rtl"] table.word-table th,html[dir="rtl"] table.word-table td{text-align:right}
-html[dir="rtl"] .modal-input,html[dir="rtl"] .welcome-name-input,html[dir="rtl"] .fill-input,html[dir="rtl"] .name-input{text-align:center}
+html[dir="rtl"] .modal-input,html[dir="rtl"] .fill-input,html[dir="rtl"] .name-input{text-align:center}
 html[dir="rtl"] .back-def,html[dir="rtl"] .card-word,html[dir="rtl"] .q-word,html[dir="rtl"] .opt-word,html[dir="rtl"] .m-card,html[dir="rtl"] .chip{direction:ltr}
 @media(max-width:430px){.lang-selector{top:8px;left:8px;transform:scale(.82);transform-origin:top left}.lang-btn{padding:4px 5px;font-size:9px}}
