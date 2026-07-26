@@ -86,7 +86,11 @@
     document.body.appendChild(auth);
 
     document.getElementById("cloud-signin").addEventListener("click", openAuth);
-    document.getElementById("cloud-signout").addEventListener("click", () => firebaseAuth.signOut());
+    document.getElementById("cloud-signout").addEventListener("click", () => {
+      firebaseAuth.signOut()
+        .then(() => toast("Signed out. Your current study session is still available."))
+        .catch(() => toast("Sign out failed. Please try again.", true));
+    });
     document.getElementById("cloud-auth-cancel").addEventListener("click", closeAuth);
     document.getElementById("cloud-auth-switch").addEventListener("click", toggleMode);
     document.getElementById("cloud-auth-form").addEventListener("submit", submitAuth);
@@ -189,13 +193,6 @@
       } catch (err) {
         state.profile = { displayName: user.displayName || user.email || "Student", role: "student" };
         toast("Signed in; cloud profile is temporarily unavailable.", true);
-      }
-      const name = (state.profile && state.profile.displayName) || user.displayName || user.email;
-      if (name) {
-        saveName(name);
-        applyGreeting(name);
-        const welcome = document.getElementById("welcome-modal");
-        if (welcome) welcome.className = "modal-overlay";
       }
       await Promise.all([loadCloudVocabulary(), loadCloudProgress()]);
     }
@@ -301,15 +298,6 @@
     }
     openAuth();
     toast("Sign in with a teacher account to continue.");
-  };
-
-  const originalSwitchUser = window.switchUser;
-  window.switchUser = function () {
-    if (state.user) {
-      firebaseAuth.signOut();
-      return;
-    }
-    originalSwitchUser();
   };
 
   document.addEventListener("DOMContentLoaded", () => {

@@ -994,61 +994,6 @@ let timerRemaining = TIMED_SECONDS;
 const TIMER_CIRC = 2 * Math.PI * 19;
 
 /* ══════════════════════════════════════════════
-   NAME / WELCOME MODAL
-══════════════════════════════════════════════ */
-function loadName(){ return sessionStorage.getItem('studentName')||''; }
-function saveName(n){ sessionStorage.setItem('studentName', n); }
-
-function checkWelcome(){
-  const name = loadName();
-  if(!name){
-    document.getElementById('welcome-modal').className = 'modal-overlay show';
-    setTimeout(()=>document.getElementById('welcome-input').focus(), 120);
-  } else {
-    applyGreeting(name);
-  }
-}
-function submitName(){
-  const val = document.getElementById('welcome-input').value.trim();
-  if(!val){ document.getElementById('welcome-input').style.borderColor='var(--red)'; return; }
-  saveName(val);
-  document.getElementById('welcome-modal').className = 'modal-overlay';
-  applyGreeting(val);
-  playSfx('correct');
-}
-function continueAsGuest(){
-  saveName('__guest__');
-  document.getElementById('welcome-modal').className = 'modal-overlay';
-  document.getElementById('home-greeting').style.display = 'none';
-  document.getElementById('switch-user-btn').style.display = 'block';
-}
-function applyGreeting(name){
-  if(name === '__guest__'){
-    document.getElementById('home-greeting').style.display = 'none';
-    document.getElementById('switch-user-btn').style.display = 'block';
-    return;
-  }
-  const el = document.getElementById('home-greeting');
-  document.getElementById('greeting-name').textContent = name;
-  el.style.display = 'block';
-  document.getElementById('switch-user-btn').style.display = 'block';
-}
-function switchUser(){
-  if(!confirm('This will clear your name and progress so another student can use this device. Continue?')) return;
-  sessionStorage.removeItem('studentName');
-  sessionStorage.removeItem('flipProgress');
-  progress = {};
-  document.getElementById('home-greeting').style.display = 'none';
-  document.getElementById('switch-user-btn').style.display = 'none';
-  document.getElementById('welcome-input').value = '';
-  document.getElementById('welcome-input').style.borderColor = '';
-  updateHomeStats();
-  document.getElementById('welcome-modal').className = 'modal-overlay show';
-  setTimeout(()=>document.getElementById('welcome-input').focus(), 120);
-}
-document.getElementById('welcome-input').addEventListener('keydown', e=>{ if(e.key==='Enter') submitName(); });
-
-/* ══════════════════════════════════════════════
    DECK PICKER MODAL
 ══════════════════════════════════════════════ */
 function openDeckModal(){
@@ -1797,4 +1742,3 @@ document.addEventListener('keydown', e=>{
 ══════════════════════════════════════════════ */
 progress = loadProgress();
 updateHomeStats();
-checkWelcome();

@@ -70,9 +70,7 @@
     signin.addEventListener("click", event => {
       event.preventDefault();
       event.stopImmediatePropagation();
-      intendedPath = "";
-      sessionStorage.removeItem(ACCESS_KEY);
-      showPortal();
+      choosePath("student");
     }, true);
     document.getElementById("cloud-signout").addEventListener("click", () => {
       intendedPath = "guest";
