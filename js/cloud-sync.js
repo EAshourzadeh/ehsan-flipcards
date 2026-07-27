@@ -177,6 +177,12 @@
     state.profile = null;
     if (user) {
       try {
+        const removed = await firestoreDb.collection("removedUsers").doc(user.uid).get();
+        if (removed.exists) {
+          toast("This student account no longer has access. Contact your teacher.", true);
+          await firebaseAuth.signOut();
+          return;
+        }
         const ref = firestoreDb.collection("users").doc(user.uid);
         const snapshot = await ref.get();
         if (snapshot.exists) {
@@ -212,7 +218,9 @@
       document.getElementById("cloud-signout").hidden = false;
     }
     const teacherEditor = document.getElementById("teacher-editor-btn");
+    const teacherUsers = document.getElementById("teacher-users-btn");
     if (teacherEditor) teacherEditor.hidden = !isTeacher();
+    if (teacherUsers) teacherUsers.hidden = !isTeacher();
   }
 
   async function loadCloudVocabulary() {
