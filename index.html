@@ -40,6 +40,7 @@
   <div class="modal-box">
     <div class="modal-title">❓ How to Play</div>
     <div class="help-list">
+      <div class="help-item"><span class="hi">📚</span><div><strong>Choose your difficulty</strong> — signed-in students can study Easy, Medium, or Hard. Each level keeps its own mastery progress. Guests use the Guest Default deck.</div></div>
       <div class="help-item"><span class="hi">🃏</span><div><strong>Flip the card</strong> — tap it (or press Space) to reveal the definition, synonym, and antonym on the back.</div></div>
       <div class="help-item"><span class="hi">✅</span><div><strong>Judge yourself honestly</strong> — after flipping, pick <em>Again</em>, <em>Hard</em>, or <em>Easy</em> based on how well you recalled the word.</div></div>
       <div class="help-item"><span class="hi">🎯</span><div><strong>Focus Mode</strong> — only shows cards you marked <em>Again</em> or <em>Hard</em>. Use it to drill your weak spots.</div></div>
@@ -94,6 +95,15 @@
   <div class="logo-mark">🃏</div>
   <div class="logo-title">EHSAN_FlipCards</div>
   <div class="logo-sub">SAT Vocab · Memory Cards</div>
+  <div class="difficulty-panel" aria-label="Word list difficulty">
+    <div class="difficulty-caption">Word list difficulty</div>
+    <div class="difficulty-selector" id="difficulty-selector">
+      <button class="difficulty-btn" id="difficulty-easy" onclick="setDifficulty('easy')">Easy</button>
+      <button class="difficulty-btn" id="difficulty-medium" onclick="setDifficulty('medium')">Medium</button>
+      <button class="difficulty-btn" id="difficulty-hard" onclick="setDifficulty('hard')">Hard</button>
+    </div>
+    <div class="guest-difficulty" id="guest-difficulty" hidden>Guest Default <span>Sign in to choose a difficulty</span></div>
+  </div>
   <div class="home-stats">
     <div class="hstat"><div class="hstat-val" id="hs-total">0</div><div class="hstat-lbl">Cards</div></div>
     <div class="hstat"><div class="hstat-val green" id="hs-easy" style="color:var(--green)">0</div><div class="hstat-lbl">Mastered</div></div>
@@ -251,7 +261,7 @@
 <div id="complete" class="screen">
   <div class="result-icon">🎓</div>
   <div class="result-title">Deck Complete!</div>
-  <div class="result-sub">Here's how you did this round</div>
+  <div class="result-sub" id="complete-difficulty">Here's how you did this round</div>
   <div class="stat-row">
     <div class="stat-box"><div class="stat-val green" id="res-easy">0</div><div class="stat-lbl">Easy</div></div>
     <div class="stat-box"><div class="stat-val amber" id="res-hard">0</div><div class="stat-lbl">Hard</div></div>
@@ -273,7 +283,8 @@
     <span class="topbar-title">✏️ Edit Word List</span>
     <div></div>
   </div>
-  <p class="editor-note">Add, edit, or remove words. Changes are shared with EHSAN_WordDuel.<br>Leave Definition blank and it will show "—" on the card back.</p>
+  <div class="difficulty-tabs editor-tabs" id="editor-tabs" aria-label="Word list to edit"></div>
+  <p class="editor-note" id="editor-note">Add, edit, or remove words. Each difficulty is stored separately.<br>Leave Definition blank and it will show "—" on the card back.</p>
   <div class="editor-table-wrap">
     <table class="word-table">
       <thead><tr><th>Word</th><th>Synonym</th><th>Antonym</th><th style="min-width:180px">Definition (optional)</th><th></th></tr></thead>
