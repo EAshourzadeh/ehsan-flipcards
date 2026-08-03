@@ -63,6 +63,7 @@
     document.getElementById("access-guest").addEventListener("click", () => {
       intendedPath = "guest";
       sessionStorage.setItem(ACCESS_KEY, intendedPath);
+      window.setFlipCardsAudience("guest");
       hidePortal();
     });
 
@@ -123,6 +124,7 @@
 
   async function verifyPath(user) {
     if (!user) {
+      window.setFlipCardsAudience("guest");
       if (intendedPath !== "guest") showPortal();
       return;
     }
@@ -138,9 +140,9 @@
           return;
         }
         hidePortal();
+        window.setFlipCardsAudience("teacher");
         if (pendingTeacherAccess) {
           pendingTeacherAccess = false;
-          words = loadWords();
           renderEditor();
           showScreen("editor");
         }
@@ -151,6 +153,7 @@
     } else {
       intendedPath = "student";
       sessionStorage.setItem(ACCESS_KEY, intendedPath);
+      window.setFlipCardsAudience("student");
       hidePortal();
     }
   }

@@ -12,6 +12,10 @@ const UI_LANG_META = {
 const UI_TEXT = {
   "es": {
     "Language": "Idioma",
+    "Word list difficulty": "Dificultad de la lista",
+    "Medium": "Intermedio",
+    "Guest Default": "Lista de invitados",
+    "Sign in to choose a difficulty": "Inicia sesión para elegir una dificultad",
     "🔒 Teacher Access": "🔒 Acceso docente",
     "Teacher Access": "Acceso docente",
     "Enter the teacher password to edit the word list": "Introduce la contraseña del profesor para editar la lista de palabras",
@@ -180,6 +184,10 @@ const UI_TEXT = {
   },
   "ru": {
     "Language": "Язык",
+    "Word list difficulty": "Уровень сложности",
+    "Medium": "Средне",
+    "Guest Default": "Гостевой набор",
+    "Sign in to choose a difficulty": "Войдите, чтобы выбрать сложность",
     "🔒 Teacher Access": "🔒 Доступ для учителя",
     "Teacher Access": "Доступ для учителя",
     "Enter the teacher password to edit the word list": "Введите пароль учителя, чтобы редактировать список слов",
@@ -348,6 +356,10 @@ const UI_TEXT = {
   },
   "fa": {
     "Language": "زبان",
+    "Word list difficulty": "سطح دشواری فهرست",
+    "Medium": "متوسط",
+    "Guest Default": "فهرست پیش‌فرض مهمان",
+    "Sign in to choose a difficulty": "برای انتخاب سطح وارد شوید",
     "🔒 Teacher Access": "🔒 دسترسی معلم",
     "Teacher Access": "دسترسی معلم",
     "Enter the teacher password to edit the word list": "برای ویرایش فهرست واژگان، رمز عبور معلم را وارد کنید",
@@ -517,6 +529,10 @@ const UI_TEXT = {
   },
   "tr": {
     "Language": "Dil",
+    "Word list difficulty": "Kelime listesi zorluğu",
+    "Medium": "Orta",
+    "Guest Default": "Misafir Varsayılan",
+    "Sign in to choose a difficulty": "Zorluk seçmek için giriş yapın",
     "🔒 Teacher Access": "🔒 Öğretmen Erişimi",
     "Teacher Access": "Öğretmen Erişimi",
     "Enter the teacher password to edit the word list": "Kelime listesini düzenlemek için öğretmen şifresini giriniz",
@@ -940,9 +956,19 @@ const DEFAULT_WORDS = [
 /* ══════════════════════════════════════════════
    STORAGE
 ══════════════════════════════════════════════ */
-function loadWords(){
+const WORD_DIFFICULTIES = ['guest','easy','medium','hard'];
+const STUDENT_DIFFICULTIES = ['easy','medium','hard'];
+const DIFFICULTY_LABELS = {guest:'Guest Default',easy:'Easy',medium:'Medium',hard:'Hard'};
+let flipCardsAudience = 'guest';
+let currentDifficulty = 'guest';
+let editorDifficulty = 'guest';
+let activeStudyDifficulty = 'guest';
+
+function loadWords(difficulty=currentDifficulty){
+  const valid = WORD_DIFFICULTIES.includes(difficulty) ? difficulty : 'guest';
   try{
-    const s = localStorage.getItem('wordlist');
+    let s = localStorage.getItem('wordlist:' + valid);
+    if(!s && (valid === 'guest' || valid === 'medium')) s = localStorage.getItem('wordlist');
     if(s){
       const parsed = JSON.parse(s);
       return parsed.map(w=>({def:'', ...w}));
@@ -950,16 +976,32 @@ function loadWords(){
   }catch(e){}
   return DEFAULT_WORDS.map(w=>({...w}));
 }
-function saveWords(list){ localStorage.setItem('wordlist', JSON.stringify(list)); }
+function saveWords(list,difficulty=currentDifficulty){
+  const valid = WORD_DIFFICULTIES.includes(difficulty) ? difficulty : 'guest';
+  localStorage.setItem('wordlist:' + valid, JSON.stringify(list));
+  if(valid === currentDifficulty) words = list;
+}
 
 /* ══════════════════════════════════════════════
    PROGRESS
 ══════════════════════════════════════════════ */
 let progress = {};
-function loadProgress(){
-  try{ return JSON.parse(sessionStorage.getItem('flipProgress')||'{}'); }catch(e){ return {}; }
+function loadProgress(difficulty=currentDifficulty){
+  const valid = WORD_DIFFICULTIES.includes(difficulty) ? difficulty : 'guest';
+  try{
+    let saved = sessionStorage.getItem('flipProgress:' + valid);
+    if(!saved && (valid === 'guest' || valid === 'medium')) saved = sessionStorage.getItem('flipProgress');
+    return JSON.parse(saved || '{}');
+  }catch(e){ return {}; }
 }
-function saveProgress(){ sessionStorage.setItem('flipProgress', JSON.stringify(progress)); }
+function progressDifficulty(){
+  const active = document.querySelector('.screen.active');
+  return active && (active.id === 'study' || active.id === 'focus' || active.id === 'complete')
+    ? activeStudyDifficulty : currentDifficulty;
+}
+function saveProgress(difficulty=progressDifficulty()){
+  sessionStorage.setItem('flipProgress:' + difficulty, JSON.stringify(progress));
+}
 function resetProgress(){
   progress = {};
   saveProgress();
@@ -986,6 +1028,47 @@ let focusFlipped = false;
 let focusStartCount = 0;
 let focusCleared = 0;
 
+function setFlipCardsAudience(role){
+  flipCardsAudience = role === 'teacher' ? 'teacher' : role === 'student' ? 'student' : 'guest';
+  if(flipCardsAudience === 'guest') currentDifficulty = 'guest';
+  else {
+    const saved = localStorage.getItem('flipcardsDifficulty');
+    currentDifficulty = STUDENT_DIFFICULTIES.includes(saved) ? saved : 'medium';
+  }
+  const active = document.querySelector('.screen.active');
+  if(!active || !['study','focus','complete'].includes(active.id)){
+    words = loadWords(currentDifficulty);
+    progress = loadProgress(currentDifficulty);
+  }
+  renderDifficultyControls();
+  updateHomeStats();
+}
+function setDifficulty(difficulty){
+  if(flipCardsAudience === 'guest' || !STUDENT_DIFFICULTIES.includes(difficulty)) return;
+  currentDifficulty = difficulty;
+  localStorage.setItem('flipcardsDifficulty',difficulty);
+  words = loadWords(currentDifficulty);
+  progress = loadProgress(currentDifficulty);
+  renderDifficultyControls();
+  updateHomeStats();
+  playSfx('click');
+}
+function renderDifficultyControls(){
+  const selector = document.getElementById('difficulty-selector');
+  const guest = document.getElementById('guest-difficulty');
+  if(selector){ selector.hidden = flipCardsAudience === 'guest'; selector.style.display = flipCardsAudience === 'guest' ? 'none' : 'flex'; }
+  if(guest){ guest.hidden = flipCardsAudience !== 'guest'; guest.style.display = flipCardsAudience === 'guest' ? 'block' : 'none'; }
+  STUDENT_DIFFICULTIES.forEach(difficulty=>{
+    const button = document.getElementById('difficulty-' + difficulty);
+    if(button) button.classList.toggle('active',currentDifficulty === difficulty);
+  });
+}
+window.setFlipCardsAudience = setFlipCardsAudience;
+window.getFlipCardsAudience = ()=>flipCardsAudience;
+window.getCurrentDifficulty = ()=>currentDifficulty;
+window.getEditorDifficulty = ()=>editorDifficulty;
+window.getProgressDifficulty = progressDifficulty;
+
 /* Timed mode */
 const TIMED_SECONDS = 10;
 let timedModeOn = false;
@@ -997,7 +1080,7 @@ const TIMER_CIRC = 2 * Math.PI * 19;
    DECK PICKER MODAL
 ══════════════════════════════════════════════ */
 function openDeckModal(){
-  words = loadWords();
+  words = loadWords(currentDifficulty);
   document.getElementById('deck-all-label').textContent = `All ${words.length} cards`;
   timedModeOn = false;
   document.getElementById('timed-toggle').classList.remove('on');
@@ -1012,8 +1095,9 @@ function toggleTimedMode(){
 }
 function launchStudy(count){
   closeDeckModal();
-  words    = loadWords();
-  progress = loadProgress();
+  activeStudyDifficulty = currentDifficulty;
+  words    = loadWords(activeStudyDifficulty);
+  progress = loadProgress(activeStudyDifficulty);
   let pool = [...words];
   for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]; }
   deck = count > 0 ? pool.slice(0, Math.min(count, pool.length)) : pool;
@@ -1119,11 +1203,11 @@ function goHome(){
    HOME STATS
 ══════════════════════════════════════════════ */
 function updateHomeStats(){
-  words = loadWords();
-  progress = loadProgress();
-  const mastered = Object.values(progress).filter(v=>v==='easy').length;
-  const due = Object.values(progress).filter(v=>v==='again'||v==='hard').length;
-  document.getElementById('hs-total').textContent = words.length;
+  const homeWords = loadWords(currentDifficulty);
+  const homeProgress = loadProgress(currentDifficulty);
+  const mastered = Object.values(homeProgress).filter(v=>v==='easy').length;
+  const due = Object.values(homeProgress).filter(v=>v==='again'||v==='hard').length;
+  document.getElementById('hs-total').textContent = homeWords.length;
   document.getElementById('hs-easy').textContent  = mastered;
   document.getElementById('hs-due').textContent   = due;
 }
@@ -1245,6 +1329,7 @@ function showComplete(){
   document.getElementById('res-hard').textContent  = hard;
   document.getElementById('res-again').textContent = again;
   document.getElementById('res-pct').textContent   = pct+'%';
+  document.getElementById('complete-difficulty').textContent = `${t("Here's how you did this round")} · ${t(DIFFICULTY_LABELS[activeStudyDifficulty])}`;
   showScreen('complete');
 }
 
@@ -1252,8 +1337,9 @@ function showComplete(){
    FOCUS MODE
 ══════════════════════════════════════════════ */
 function startFocus(){
-  words    = loadWords();
-  progress = loadProgress();
+  activeStudyDifficulty = currentDifficulty;
+  words    = loadWords(activeStudyDifficulty);
+  progress = loadProgress(activeStudyDifficulty);
   focusDeck = words.filter(w => progress[w.word] === 'again' || progress[w.word] === 'hard');
 
   showScreen('focus');
@@ -1346,7 +1432,10 @@ function focusJudge(rating){
 function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
 function renderEditor(){
-  const list = loadWords();
+  const tabs = document.getElementById('editor-tabs');
+  tabs.innerHTML = WORD_DIFFICULTIES.map(difficulty=>`<button class="difficulty-tab ${difficulty===editorDifficulty?'active':''}" onclick="setEditorDifficulty('${difficulty}')">${t(DIFFICULTY_LABELS[difficulty])} (${loadWords(difficulty).length})</button>`).join('');
+  document.getElementById('editor-note').innerHTML = `Editing ${DIFFICULTY_LABELS[editorDifficulty]}. This list is stored and published separately.<br>Leave Definition blank and it will show "—" on the card back.`;
+  const list = loadWords(editorDifficulty);
   document.getElementById('editor-body').innerHTML = list.map((w,i)=>`
     <tr data-idx="${i}">
       <td><input value="${escHtml(w.word)}" onchange="editorChange(${i},'word',this.value)"/></td>
@@ -1358,16 +1447,23 @@ function renderEditor(){
   document.getElementById('editor-toast').className = 'save-toast';
 }
 
+function setEditorDifficulty(difficulty){
+  if(!WORD_DIFFICULTIES.includes(difficulty)) return;
+  editorDifficulty = difficulty;
+  renderEditor();
+  playSfx('click');
+}
+
 function editorChange(i, field, val){
-  const d = loadWords(); d[i][field] = val; saveWords(d);
+  const d = loadWords(editorDifficulty); d[i][field] = val; saveWords(d,editorDifficulty);
 }
 function editorDel(i){
-  const d = loadWords(); d.splice(i,1); saveWords(d); renderEditor();
+  const d = loadWords(editorDifficulty); d.splice(i,1); saveWords(d,editorDifficulty); renderEditor();
 }
 function editorAddRow(){
-  const d = loadWords();
+  const d = loadWords(editorDifficulty);
   d.push({word:'',syn:'',ant:'',def:''});
-  saveWords(d); renderEditor();
+  saveWords(d,editorDifficulty); renderEditor();
   setTimeout(()=>{
     const rows = document.querySelectorAll('#editor-body tr');
     const last = rows[rows.length-1];
@@ -1385,8 +1481,7 @@ function editorSave(){
     const def  = ins[3].value.trim();
     if(word) d.push({word, syn, ant, def});
   });
-  saveWords(d);
-  words = d;
+  saveWords(d,editorDifficulty);
   document.getElementById('editor-toast').className = 'save-toast show';
   setTimeout(()=>document.getElementById('editor-toast').className='save-toast', 2200);
   playSfx('correct');
@@ -1395,14 +1490,13 @@ function editorSave(){
 
 /* ── DELETE ALL WORDS ── */
 function openDeleteAllModal(){
-  const list = loadWords();
+  const list = loadWords(editorDifficulty);
   document.getElementById('delete-count-label').textContent = list.length;
   document.getElementById('confirm-delete-modal').className = 'modal-overlay show';
 }
 function closeDeleteAllModal(){ document.getElementById('confirm-delete-modal').className = 'modal-overlay'; }
 function confirmDeleteAll(){
-  saveWords([]);
-  words = [];
+  saveWords([],editorDifficulty);
   closeDeleteAllModal();
   renderEditor();
   updateHomeStats();
@@ -1501,8 +1595,7 @@ function handleUploadFile(input){
 
 function confirmUpload(){
   if(!pendingUploadWords || !pendingUploadWords.length) return;
-  saveWords(pendingUploadWords);
-  words = pendingUploadWords;
+  saveWords(pendingUploadWords,editorDifficulty);
   pendingUploadWords = null;
   closeUploadModal();
   renderEditor();
@@ -1515,14 +1608,14 @@ function exportWordList(){
     .replace(/[\t\r\n]+/g, ' ')
     .replace(/;/g, ',')
     .trim();
-  const lines = loadWords().map(item =>
+  const lines = loadWords(editorDifficulty).map(item =>
     `${clean(item.word)};\t${clean(item.syn)};\t${clean(item.ant)};\t${clean(item.def)};`
   );
   const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type:'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'EHSAN_FlipCards_WordList.txt';
+  link.download = `EHSAN_FlipCards_${DIFFICULTY_LABELS[editorDifficulty].replace(/\s+/g,'_')}_WordList.txt`;
   document.body.appendChild(link);
   link.click();
   link.remove();
